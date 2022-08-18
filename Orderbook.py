@@ -2,6 +2,7 @@
 #
 # FTX project with Chris Chaves
 
+#from selectors import EpollSelector
 import pandas as pd
 import numpy as np
 
@@ -19,6 +20,72 @@ class OrderBook():
     """
     orders are formatted as such: [price_level, size]
     """
+    
+
+    def limitUpdate(self, bids: list, asks: list):
+        if bids:
+            #bid_cols = zip(*bids)
+            #prices = bid_cols[0]
+            print('bids')
+            
+            curr_bids = list(zip(*self.bids))
+            curr_bid_prices = curr_bids[0]
+
+            #sizes = cols[1]
+            for order in bids:
+                if order[0] in curr_bid_prices:
+                    idx = curr_bid_prices.index(order[0])
+                    if order[1] == 0:
+                        self.bids.pop(idx)
+                    else:
+                        self.bids[idx] = order
+                else:
+                    self.bids.append(order)
+                    self.bids = sorted(self.bids,key=lambda x: (x[0],x[1]))
+        if asks:
+            #cols = zip(*asks)
+            #prices = cols[0]
+
+            print('asks')
+
+            curr_asks = list(zip(*self.asks))
+            curr_ask_prices = curr_asks[0]
+
+            #sizes = cols[1]
+            for order in asks:
+                if order[0] in curr_ask_prices:
+                    idx = curr_ask_prices.index(order[0])
+                    if order[1] == 0:
+                        self.asks.pop(idx)
+                    else:
+                        self.asks[idx] = order
+                else:
+                    self.asks.append(order)
+                    self.asks = sorted(self.asks,key=lambda x: (x[0],x[1]))
+
+    def tradeUpdate(self, trades: list):
+        for trade in trades:
+            price = trade['price']
+            size = trade['size']
+            side = (trade['side'] == 'buy')
+            if side:
+                curr_asks = list(zip(*self.asks))
+                curr_ask_prices = curr_asks[0]
+                idx = curr_ask_prices.index(price)
+                self.asks[idx][1] = self.asks[idx][1] - size
+            else:
+                curr_bids = list(zip(*self.bids))
+                curr_bid_prices = curr_bids[0]
+                idx = curr_bid_prices.index(price)
+                self.bids[idx][1] = self.bids[idx][1] - size
+
+    
+
+    
+    
+    
+    
+    
     def addLimitOrder(self, order: list, is_bid: bool):
         if is_bid: 
             self.bids.append(order)
@@ -26,6 +93,7 @@ class OrderBook():
         else:
             self.asks.append(order)
             self.asks = sorted(self.asks,key=lambda x: (x[0],x[1]))
+
 
 
     def marketOrder(self, size: float, is_bid: bool):
@@ -71,7 +139,28 @@ class OrderBook():
 
         
     
-    
+#trades = [{"id":39638614,"price":2,"size":0.5,"side":"sell","liquidation":false,"time":"2022-08-18T05:17:36.059948+00:00"}]
+
+#ob = OrderBook([[1, 1], [2, 2]], [[3, 3], [4, 4]])
+#print('bids', ob.bids, 'asks', ob.asks)
+
+# ob.limitUpdate([[1, 2]], [])
+# print('bids', ob.bids, 'asks', ob.asks)
+
+# ob.limitUpdate([[1, 0]], [])
+# print('bids', ob.bids, 'asks', ob.asks)
+
+# ob.limitUpdate([[1, 2]], [[4, 5]])
+# print('bids', ob.bids, 'asks', ob.asks)
+
+# ob.limitUpdate([], [[4, 0]])
+# print('bids', ob.bids, 'asks', ob.asks)
+
+#ob.tradeUpdate([{"id":39638614,"price":2,"size":0.5,"side":"sell","liquidation":False,"time":"2022-08-18T05:17:36.059948+00:00"}])
+#print('bids', ob.bids, 'asks', ob.asks)
+
+
+
 
 
 
