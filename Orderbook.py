@@ -2,7 +2,6 @@
 #
 # FTX project with Chris Chaves
 
-#from selectors import EpollSelector
 import pandas as pd
 import numpy as np
 
@@ -78,6 +77,9 @@ class OrderBook():
                 curr_bid_prices = curr_bids[0]
                 idx = curr_bid_prices.index(price)
                 self.bids[idx][1] = self.bids[idx][1] - size
+
+
+
 
     
 

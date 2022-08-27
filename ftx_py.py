@@ -1,7 +1,9 @@
+from time import time
 import pandas as pd
 import numpy as np
 import json
 from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 import requests
 from websocket import create_connection
@@ -31,6 +33,13 @@ API_secret = API_secret.strip('\n')
 
 ob = OrderBook([], [])
 
+ob_dict = {}
+
+def obDict(time: str, bids: list, asks: list):
+    global ob_dict
+    ob_dict[time] = {'bids': bids, 'asks': asks}
+
+
 
 #json dumps converts a python object into a json stream
 def get_ob():
@@ -52,6 +61,12 @@ def get_ob():
 
         bids = m['data']['bids']
         asks = m['data']['asks']
+
+        t = m['data']['time']
+        t = str(datetime.fromtimestamp(t, timezone.utc))
+        print(t)
+
+        #time = m['data']
         
         if m['type'] == 'partial':
             ob = OrderBook(bids, asks)
@@ -60,6 +75,12 @@ def get_ob():
             ob.limitUpdate(bids, asks)
             #print('BIDS', ob.bids)
             #print('ASKS', ob.asks)
+        
+        obDict(t, ob.bids, ob.asks)
+
+        
+
+        #print(m)
 
 
         ###### full json payloads ######
@@ -94,10 +115,13 @@ def get_trades():
 
         m = json.loads(message)
         trades = m['data']
+        t = m['data'][0]['time']
 
         ob.tradeUpdate(trades)
         print('TRADE UPDATE', ob.bids)
         print(ob.asks)
+
+        obDict(t, ob.bids, ob.asks)
 
         ###### full json payloads ######
         # pprint.pprint(json.loads(message))
