@@ -34,7 +34,7 @@ class OrderBook():
             for order in bids:
                 if order[0] in curr_bid_prices:
                     idx = curr_bid_prices.index(order[0])
-                    if order[1] == 0:
+                    if order[1] == 0.0:
                         self.bids.pop(idx)
                     else:
                         self.bids[idx] = order
@@ -72,11 +72,15 @@ class OrderBook():
                 curr_ask_prices = curr_asks[0]
                 idx = curr_ask_prices.index(price)
                 self.asks[idx][1] = self.asks[idx][1] - size
+                if self.asks[idx][1] == 0.0:
+                    self.asks.pop(idx)
             else:
                 curr_bids = list(zip(*self.bids))
                 curr_bid_prices = curr_bids[0]
                 idx = curr_bid_prices.index(price)
                 self.bids[idx][1] = self.bids[idx][1] - size
+                if self.bids[idx][1] == 0.0:
+                    self.bids.pop(idx)
 
 
 

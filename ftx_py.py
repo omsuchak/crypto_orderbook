@@ -1,9 +1,8 @@
-from time import time
-import pandas as pd
 import numpy as np
 import json
 from datetime import datetime
 from datetime import timezone
+import time
 from pathlib import Path
 import requests
 from websocket import create_connection
@@ -31,6 +30,12 @@ API_secret = "mJT4sRJSQfPJR5GED1prOTFqza_w5dXz2-mg8pyT"
 API_key = API_key.strip('\n')
 API_secret = API_secret.strip('\n')
 
+time_init = time.time()
+time_end = time_init + 600
+print('time end:', time_end)
+
+count = 0
+
 ob = OrderBook([], [])
 
 ob_dict = {}
@@ -54,6 +59,9 @@ def get_ob():
 
     def on_message(wsapp, message, prev=None):
         global ob
+        global ob_dict
+        global time_end
+        global count
         print(f"OB Info, Received : {datetime.now()}")
 
         m = json.loads(message)
@@ -62,9 +70,12 @@ def get_ob():
         bids = m['data']['bids']
         asks = m['data']['asks']
 
-        t = m['data']['time']
-        t = str(datetime.fromtimestamp(t, timezone.utc))
+        mill_t = m['data']['time']
+        print(mill_t)
+        t = str(datetime.fromtimestamp(mill_t, timezone.utc))
+        print(time_end)
         print(t)
+        
 
         #time = m['data']
         
@@ -77,6 +88,12 @@ def get_ob():
             #print('ASKS', ob.asks)
         
         obDict(t, ob.bids, ob.asks)
+
+        if count == 0 and mill_t > time_end:
+            count += 1
+            with open('10minpoll_9-12.json', 'w') as outfile:
+                json.dump(ob_dict, outfile)
+
 
         
 
@@ -110,6 +127,7 @@ def get_trades():
 
     def on_message(wsapp, message, prev=None):
         global ob
+        global time_end
         print(f"Trades Info, Received : {datetime.now()}")
         print(message)
 
